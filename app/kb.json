@@ -1,0 +1,79 @@
+[
+  {
+    "service": "Password Reset",
+    "department": "IT Support",
+    "email": "mutasimbhat1@gmail.com",
+    "authority": "IT Helpdesk",
+    "auto_reply_allowed": true,
+    "keywords": [
+      "password",
+      "reset",
+      "login"
+    ]
+  },
+  {
+    "service": "Refund",
+    "department": "Finance",
+    "email": "mutasimjan12@gmail.com",
+    "authority": "Finance Team",
+    "auto_reply_allowed": true,
+    "keywords": [
+      "refund",
+      "money",
+      "return"
+    ]
+  },
+  {
+    "service": "Library Book Issue",
+    "department": "Library",
+    "email": "mutasimbhat21@gmail.com",
+    "authority": "Library Staff",
+    "auto_reply_allowed": true,
+    "keywords": [
+      "book",
+      "library",
+      "borrow",
+      "issue",
+      "return book",
+      "library card",
+      "fine"
+    ]
+  },
+  {
+    "service": "Transport Services",
+    "department": "Transport",
+    "email": "janmutasim563@gmail.com",
+    "authority": "Transport Manager",
+    "auto_reply_allowed": true,
+    "keywords": [
+      "bus",
+      "transport",
+      "route",
+      "bus pass",
+      "shuttle",
+      "vehicle"
+    ]
+  },
+  {
+    "service": "Academic Support",
+    "department": "Academics",
+    "email": "mutu02693@gmail.com",
+    "authority": "Academic Office",
+    "auto_reply_allowed": true,
+    "keywords": [
+      "course",
+      "registration",
+      "exam",
+      "grade",
+      "transcript",
+      "academic",
+      "class",
+      "enrollment",
+      "results",
+      "marks",
+      "score",
+      "performance",
+      "report card"
+    ]
+  }
+]
