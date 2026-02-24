@@ -9,7 +9,8 @@
       "password",
       "reset",
       "login"
-    ]
+    ],
+    "resolution": "To reset your password, visit the 'Forgot Password' link on the login page. Enter your registered email, and a reset link will be sent to you. If you don't receive it within 5 minutes, please check your spam folder."
   },
   {
     "service": "Refund",
@@ -20,8 +21,12 @@
     "keywords": [
       "refund",
       "money",
-      "return"
-    ]
+      "return",
+      "fee",
+      "payment",
+      "charge"
+    ],
+    "resolution": "Refunds are processed within 7-10 business days. To track your refund, log into our portal and visit the 'Transaction History' section. If you are requesting a NEW refund, please ensure you have your invoice number ready for the finance team."
   },
   {
     "service": "Library Book Issue",
@@ -37,7 +42,8 @@
       "return book",
       "library card",
       "fine"
-    ]
+    ],
+    "resolution": "Books can be issued for up to 14 days. You can renew books twice via the online library catalog. Please ensure you have your physical library card for in-person pickups. Late returns incur a fine of $0.50 per day."
   },
   {
     "service": "Transport Services",
@@ -52,7 +58,8 @@
       "bus pass",
       "shuttle",
       "vehicle"
-    ]
+    ],
+    "resolution": "Bus passes are issued at the Transport Office (Block B, Ground Floor). You will need one passport-sized photo and your student/employee ID. Shuttle routes and schedules are available live on our mobile app under the 'Commute' tab."
   },
   {
     "service": "Academic Support",
@@ -74,6 +81,7 @@
       "score",
       "performance",
       "report card"
-    ]
+    ],
+    "resolution": "Exam results and report cards are released via the Academic Portal 15 days after the final exam. For transcripts, please submit a request form at the Academic Office window or via the 'Documents' section online."
   }
 ]

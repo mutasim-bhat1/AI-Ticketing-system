@@ -11,5 +11,10 @@ dependencies = [
     "langchain-google-genai>=2.0.0",
     "python-dotenv>=1.0.0",
     "langchain-groq>=1.1.2",
+    "sentence-transformers>=5.2.2",
+    "numpy>=2.2.6",
+    "langchain-huggingface>=1.2.0",
+    "streamlit>=1.54.0",
+    "requests>=2.32.5",
 ]
 
