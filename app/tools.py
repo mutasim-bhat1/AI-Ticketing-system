@@ -39,10 +39,11 @@ def create_search_kb_tool(knowledge_base: list, threshold: float = 0.4):
         A LangChain tool function that searches the knowledge base using embeddings
     """
     # Pre-calculate embeddings for the Knowledge Base for efficiency
-    # We combine 'service' and 'keywords' for a richer semantic representation
+    # We embed 'service + description' — NO hardcoded keywords. The AI figures out
+    # the semantic connection between the user's query and the service description.
     kb_embeddings = []
     for item in knowledge_base:
-        text_to_embed = f"{item['service']} {' '.join(item['keywords'])}"
+        text_to_embed = f"{item['service']}: {item.get('description', '')}"
         embedding = embeddings_model.embed_query(text_to_embed)
         kb_embeddings.append(embedding)
 
@@ -55,7 +56,7 @@ def create_search_kb_tool(knowledge_base: list, threshold: float = 0.4):
             query: The user's query text
         
         Returns:
-            A service dict with: service, department, email, authority, auto_reply_allowed, keywords, and confidence
+            A service dict with: service, department, email, authority, auto_reply_allowed, description, and confidence
             OR {"error": "No matching service found"} if no match above threshold
         """
         log_tool_call("search_kb", {"query": query})
@@ -93,47 +94,84 @@ def create_search_kb_tool(knowledge_base: list, threshold: float = 0.4):
 
 def create_generate_reply_tool(llm):
     """
-    Factory function to create an intelligent generate_reply tool using the LLM.
+    Factory function to create a TRULY agentic generate_reply tool.
+    
+    The LLM generates its OWN answer using its knowledge + the service context.
+    No pre-written resolution is provided — the AI reasons and creates the response.
     
     Returns:
-        A LangChain tool function that generates context-aware replies
+        A LangChain tool function that generates intelligent, original replies
     """
     @tool
-    def generate_reply(query: str, resolution: str) -> str:
+    def generate_reply(query: str, service: str, department: str) -> str:
         """
-        Dynamically synthesize a helpful response using the LLM and KB facts.
-        """
-        log_tool_call("generate_reply", {"query": query})
+        Generate an intelligent, context-aware response for the user's query.
+        The AI uses its own knowledge and reasoning to craft helpful guidance.
         
-        # We craft a prompt to ensure the AI uses the provided data to answer naturally
+        Args:
+            query: The user's original question or request
+            service: The matched service category (e.g. 'Password Reset')
+            department: The responsible department (e.g. 'IT Support')
+        """
+        log_tool_call("generate_reply", {"query": query, "service": service, "department": department})
+        
         prompt = (
-            "You are a helpful customer support agent. A user has asked a question, "
-            "and we have found the relevant information in our knowledge base.\n\n"
+            "You are a knowledgeable customer support agent for an organization.\n"
+            "A user has submitted a support request, and it has been routed to the correct department.\n\n"
             f"USER QUERY: {query}\n"
-            f"KNOWLEDGE BASE FACTS: {resolution}\n\n"
+            f"SERVICE CATEGORY: {service}\n"
+            f"RESPONSIBLE DEPARTMENT: {department}\n\n"
             "INSTRUCTIONS:\n"
-            "1. Rewrite the information in a professional, empathetic, and helpful way.\n"
-            "2. Address the user's query directly.\n"
-            "3. Do not make up any facts; only use the knowledge base facts provided.\n"
-            "4. Keep it concise but thorough.\n"
-            "5. Do NOT mention that you are an AI or using a 'Knowledge Base'. Just answer as the support team.\n\n"
+            "1. Provide a professional, empathetic, and helpful response.\n"
+            "2. Use your knowledge to suggest common steps, processes, or resolutions for this type of issue.\n"
+            "3. Be specific and actionable — give the user concrete steps they can take.\n"
+            "4. If it's a process (like password reset, refund, etc.), outline the typical steps clearly.\n"
+            "5. Mention that a support ticket has been created and the relevant team will follow up.\n"
+            "6. Keep it concise but thorough.\n"
+            "7. Do NOT mention that you are an AI. Respond as the support team.\n\n"
             "YOUR RESPONSE:"
         )
         
         try:
-            # Call the LLM to generate the personalized response
             ai_response = llm.invoke(prompt)
-            # Extract content (ChatGroq returns an AIMessage object)
             response_text = ai_response.content if hasattr(ai_response, 'content') else str(ai_response)
-            
             return response_text
             
         except Exception as e:
             print(f"[LOG] LLM Generation failed: {e}. Falling back to template.")
-            # Fallback if the LLM call fails
-            return f"Thank you for reaching out. Based on our records: {resolution}"
+            return (
+                f"Thank you for reaching out regarding {service}. "
+                f"Your request has been forwarded to the {department} team. "
+                f"A team member will get back to you shortly."
+            )
     
     return generate_reply
+
+
+def create_chat_tool(llm):
+    """
+    Factory function to create a chat tool for general conversational queries.
+    This tool answers general questions WITHOUT creating tickets or sending emails.
+    Used when the user asks something that is not a support request.
+    """
+    @tool
+    def chat(query: str) -> str:
+        """
+        Answer a general user question directly using AI knowledge.
+        Use this for non-support queries like greetings, general knowledge, or casual conversation.
+        No ticket is created and no email is sent.
+        
+        Args:
+            query: The user's general question or message
+        """
+        log_tool_call("chat", {"query": query})
+        try:
+            response = llm.invoke(query)
+            return response.content if hasattr(response, "content") else str(response)
+        except Exception as e:
+            print(f"[LOG] Chat tool failed: {e}")
+            return "I'm sorry, I couldn't process your request at the moment."
+    return chat
 
 
 def create_send_email_tool(smtp_config: dict):
@@ -206,6 +244,7 @@ def create_tools(knowledge_base: list, smtp_config: dict, llm, threshold: float 
     return [
         create_search_kb_tool(knowledge_base, threshold),
         create_generate_reply_tool(llm),
+        create_chat_tool(llm),
         create_send_email_tool(smtp_config),
         create_escalate_tool()
     ]

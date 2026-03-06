@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Ticketing System — Dashboard</title>
+  <meta name="description"
+    content="Intelligent AI-powered ticketing system with autonomous ticket creation, routing, and resolution." />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.1.0/remixicon.min.css" />
+</head>
+
+<body>
+
+  <!-- Gradient accent bar -->
+  <div class="accent-bar"></div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">🎫</div>
+      <span class="brand-text">AI Desk</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main</div>
+
+      <a class="nav-item admin-only" data-view="dashboard" id="nav-dashboard">
+        <i class="ri-dashboard-3-line"></i>
+        <span>Admin Dashboard</span>
+      </a>
+      <a class="nav-item" data-view="tickets" id="nav-tickets">
+        <i class="ri-coupon-line"></i>
+        <span id="tickets-nav-label">All Tickets</span>
+        <span class="nav-badge" id="ticket-count-badge">0</span>
+      </a>
+      <a class="nav-item user-only" data-view="chat" id="nav-chat">
+        <i class="ri-chat-3-line"></i>
+        <span>AI Chat</span>
+      </a>
+
+      <div class="nav-section-title admin-only">Management</div>
+
+      <a class="nav-item admin-only" id="nav-kb">
+        <i class="ri-book-open-line"></i>
+        <span>Knowledge Base</span>
+      </a>
+      <a class="nav-item admin-only" id="nav-reports">
+        <i class="ri-bar-chart-box-line"></i>
+        <span>Reports</span>
+      </a>
+      <a class="nav-item admin-only" id="nav-settings">
+        <i class="ri-settings-3-line"></i>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-avatar-icon">AD</div>
+        <div class="user-info">
+          <div class="user-name" id="user-display-name">Admin User</div>
+          <div class="user-role" id="user-display-role">System Administrator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN CONTENT ═══════════ -->
+  <main class="main-content">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="role-switcher">
+        <i class="ri-user-settings-line"></i>
+        <select id="role-selector" onchange="switchRole(this.value)">
+          <option value="admin">Login as Admin</option>
+          <option value="user">Login as Normal User</option>
+        </select>
+      </div>
+
+      <div class="topbar-search">
+        <i class="ri-search-line"></i>
+        <input type="text" id="global-search" placeholder="Search tickets by subject, department, ID…" />
+      </div>
+      <div class="topbar-actions">
+        <button class="topbar-btn" title="Toggle Dark Mode" id="btn-theme" onclick="toggleTheme()">
+          <i class="ri-moon-line" id="theme-icon"></i>
+        </button>
+        <button class="topbar-btn" title="Notifications" id="btn-notifications">
+          <i class="ri-notification-3-line"></i>
+          <span class="notification-dot" id="notif-dot" style="display:none;"></span>
+        </button>
+        <button class="topbar-btn" title="Refresh" id="btn-refresh" onclick="refreshDashboard()">
+          <i class="ri-refresh-line"></i>
+        </button>
+        <button class="btn btn-primary user-only" id="btn-new-query" onclick="switchView('chat')">
+          <i class="ri-add-line"></i> New Query
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="page-content">
+
+      <div class="content-main">
+
+        <!-- ════ DASHBOARD VIEW (Admin) ════ -->
+        <div id="panel-dashboard">
+          <div class="stats-row">
+            <div class="stat-card" id="stat-card-all" onclick="filterDashboardByStatus('all')">
+              <div class="stat-icon blue"><i class="ri-inbox-line"></i></div>
+              <div>
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-label">Total Tickets</div>
+              </div>
+            </div>
+            <div class="stat-card" id="stat-card-pending" onclick="filterDashboardByStatus('pending')">
+              <div class="stat-icon orange"><i class="ri-time-line"></i></div>
+              <div>
+                <div class="stat-value" id="stat-pending">0</div>
+                <div class="stat-label">Pending</div>
+              </div>
+            </div>
+            <div class="stat-card" id="stat-card-resolved" onclick="filterDashboardByStatus('resolved')">
+              <div class="stat-icon green"><i class="ri-checkbox-circle-line"></i></div>
+              <div>
+                <div class="stat-value" id="stat-resolved">0</div>
+                <div class="stat-label">Resolved</div>
+              </div>
+            </div>
+            <div class="stat-card" id="stat-card-escalated" onclick="filterDashboardByStatus('escalated')">
+              <div class="stat-icon red"><i class="ri-error-warning-line"></i></div>
+              <div>
+                <div class="stat-value" id="stat-escalated">0</div>
+                <div class="stat-label">Escalated</div>
+              </div>
+            </div>
+            <div class="stat-card" onclick="filterDashboardByStatus('all')">
+              <div class="stat-icon purple"><i class="ri-chat-smile-2-line"></i></div>
+              <div>
+                <div class="stat-value" id="stat-chats">0</div>
+                <div class="stat-label">AI Chats</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dashboard Header + Filter Chip -->
+          <div class="section-header">
+            <div class="section-title">
+              <i class="ri-coupon-line"></i> Recent Tickets
+              <span class="count-badge" id="recent-count-badge">0</span>
+              <span class="filter-chip" id="filter-chip" style="display:none;" onclick="clearDashboardFilter()">
+                <span id="filter-chip-text"></span>
+                <i class="ri-close-line"></i>
+              </span>
+            </div>
+            <div class="section-actions">
+              <div class="view-tabs" id="tabs-dashboard">
+                <button class="view-tab active" data-mode="table" onclick="setDashboardMode('table', this)">
+                  <i class="ri-list-check-2"></i> Table
+                </button>
+                <button class="view-tab" data-mode="cards" onclick="setDashboardMode('cards', this)">
+                  <i class="ri-layout-grid-line"></i> Cards
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="dashboard-table-container">
+            <div class="tickets-table-wrap">
+              <table class="tickets-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Subject</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody id="tickets-tbody"></tbody>
+              </table>
+              <div class="empty-state" id="tickets-empty">
+                <i class="ri-inbox-unarchive-line"></i>
+                <h3>No tickets yet</h3>
+                <p>Submit a query using the AI Chat to create your first ticket.</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="dashboard-cards-container" style="display:none;">
+            <div class="ticket-cards-grid" id="ticket-cards-grid"></div>
+            <div class="empty-state" id="cards-empty" style="display:none;">
+              <i class="ri-inbox-unarchive-line"></i>
+              <h3>No tickets yet</h3>
+              <p>Submit a query to create your first ticket.</p>
+            </div>
+          </div>
+
+          <!-- Admin Bottom: Activity + Departments -->
+          <div class="admin-bottom-row">
+            <div class="admin-bottom-card">
+              <div class="sidebar-card-header">
+                <h4><i class="ri-history-line" style="color:var(--accent-blue)"></i> Recent Activity</h4>
+              </div>
+              <div class="sidebar-card-body" id="activity-feed">
+                <div class="empty-state" style="padding: 20px 0;">
+                  <i class="ri-history-line"></i>
+                  <p>No recent activity</p>
+                </div>
+              </div>
+            </div>
+            <div class="admin-bottom-card">
+              <div class="sidebar-card-header">
+                <h4><i class="ri-building-2-line" style="color:var(--accent-teal)"></i> Departments</h4>
+              </div>
+              <div class="sidebar-card-body">
+                <div class="activity-item">
+                  <div class="activity-icon email"><i class="ri-computer-line"></i></div>
+                  <div class="activity-text"><strong>IT Support</strong><br />Password, Software, Network</div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-icon resolve"><i class="ri-money-dollar-circle-line"></i></div>
+                  <div class="activity-text"><strong>Finance</strong><br />Fees, Payments, Refunds</div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-icon warn"><i class="ri-bus-line"></i></div>
+                  <div class="activity-text"><strong>Transport</strong><br />Bus Passes, Routes, Schedules</div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-icon chat-act"><i class="ri-book-open-line"></i></div>
+                  <div class="activity-text"><strong>Library</strong><br />Books, Returns, Membership</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════ TICKETS VIEW ════ -->
+        <div id="panel-tickets" style="display:none;">
+          <div class="section-header">
+            <div class="section-title">
+              <i class="ri-coupon-line"></i> <span id="all-tickets-title">All Tickets</span>
+              <span class="count-badge" id="all-tickets-badge">0</span>
+            </div>
+            <div class="section-actions">
+              <select class="btn btn-outline" id="filter-dept" onchange="renderTickets()">
+                <option value="all">All Departments</option>
+              </select>
+              <select class="btn btn-outline" id="filter-status" onchange="renderTickets()">
+                <option value="all">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="pending">Pending</option>
+                <option value="resolved">Resolved</option>
+                <option value="escalated">Escalated</option>
+              </select>
+            </div>
+          </div>
+          <div class="tickets-table-wrap">
+            <table class="tickets-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Subject</th>
+                  <th>Department</th>
+                  <th class="admin-col">Email</th>
+                  <th>Status</th>
+                  <th class="admin-col">Priority</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody id="all-tickets-tbody"></tbody>
+            </table>
+            <div class="empty-state" id="all-tickets-empty" style="display:none;">
+              <i class="ri-filter-off-line"></i>
+              <h3>No matching tickets</h3>
+              <p>Try adjusting your filters.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════ CHAT VIEW ════ -->
+        <div id="panel-chat" style="display:none;">
+          <div class="section-header">
+            <div class="section-title">
+              <i class="ri-chat-3-line"></i> AI Support Chat
+            </div>
+          </div>
+          <div class="chat-panel">
+            <div class="chat-panel-header">
+              <i class="ri-robot-2-line"></i>
+              <h3>Chat with AI Agent</h3>
+              <span class="chat-status-dot"></span>
+              <span class="chat-status-text">Online</span>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+              <div class="chat-message bot">
+                <div class="msg-avatar"><i class="ri-robot-2-line"></i></div>
+                <div class="msg-bubble">
+                  Hello! 👋 I'm your AI support agent. I can help you with support requests <strong>and</strong>
+                  general questions. Try asking me anything!
+                  <div class="msg-time">Just now</div>
+                </div>
+              </div>
+            </div>
+            <div class="chat-input-wrap">
+              <input type="text" id="chat-input" placeholder="Type your message…"
+                onkeydown="if(event.key==='Enter')sendChatMessage()" />
+              <button class="send-btn" id="chat-send-btn" onclick="sendChatMessage()">
+                <i class="ri-send-plane-2-fill"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Actions: BELOW CHAT (user only) -->
+          <div class="quick-actions-row user-sidebar-card" id="card-quick-actions">
+            <div class="quick-actions-header">
+              <i class="ri-flashlight-line"></i> Quick Actions
+            </div>
+            <div class="quick-actions-bar">
+              <button class="quick-action-chip" onclick="quickQuery('I forgot my password')">
+                <i class="ri-lock-password-line"></i> Password Reset
+              </button>
+              <button class="quick-action-chip" onclick="quickQuery('I want to check my fee payment status')">
+                <i class="ri-money-dollar-circle-line"></i> Fee Status
+              </button>
+              <button class="quick-action-chip" onclick="quickQuery('How do I get a bus pass?')">
+                <i class="ri-bus-line"></i> Bus Pass
+              </button>
+              <button class="quick-action-chip" onclick="quickQuery('I need to return a library book')">
+                <i class="ri-book-2-line"></i> Library
+              </button>
+              <button class="quick-action-chip" onclick="quickQuery('When does course registration start?')">
+                <i class="ri-graduation-cap-line"></i> Registration
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ RIGHT: Sidebar (User chat only) ═══ -->
+      <div class="content-sidebar" id="content-sidebar">
+
+        <div class="sidebar-card user-sidebar-card" id="card-user-summary">
+          <div class="sidebar-card-header">
+            <h4><i class="ri-pie-chart-2-line" style="color:var(--accent-purple)"></i> Your Summary</h4>
+          </div>
+          <div class="sidebar-card-body">
+            <div class="user-summary-stats">
+              <div class="user-summary-item">
+                <span class="user-summary-num" id="user-stat-open">0</span>
+                <span class="user-summary-label">Open</span>
+              </div>
+              <div class="user-summary-item">
+                <span class="user-summary-num resolved" id="user-stat-resolved">0</span>
+                <span class="user-summary-label">Resolved</span>
+              </div>
+              <div class="user-summary-item">
+                <span class="user-summary-num chats" id="user-stat-chats">0</span>
+                <span class="user-summary-label">Chats</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-card user-sidebar-card" id="card-help-tips">
+          <div class="sidebar-card-header">
+            <h4><i class="ri-lightbulb-line" style="color:var(--accent-orange)"></i> Tips</h4>
+          </div>
+          <div class="sidebar-card-body">
+            <div class="help-tips">
+              <div class="help-tip">
+                <i class="ri-information-line"></i>
+                <span>Be specific about your issue for faster resolution.</span>
+              </div>
+              <div class="help-tip">
+                <i class="ri-information-line"></i>
+                <span>Include your student/employee ID when reporting account issues.</span>
+              </div>
+              <div class="help-tip">
+                <i class="ri-information-line"></i>
+                <span>You can ask general questions too — I'm also a chatbot!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═══════════ TICKET DETAIL MODAL ═══════════ -->
+  <div class="modal-overlay" id="ticket-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">Ticket Details</h2>
+        <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+
+</html>

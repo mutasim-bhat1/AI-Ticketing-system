@@ -2,86 +2,41 @@
   {
     "service": "Password Reset",
     "department": "IT Support",
+    "description": "Handles issues related to forgotten passwords, account lockouts, login failures, credential recovery, and self-service password resets.",
     "email": "mutasimbhat1@gmail.com",
     "authority": "IT Helpdesk",
-    "auto_reply_allowed": true,
-    "keywords": [
-      "password",
-      "reset",
-      "login"
-    ],
-    "resolution": "To reset your password, visit the 'Forgot Password' link on the login page. Enter your registered email, and a reset link will be sent to you. If you don't receive it within 5 minutes, please check your spam folder."
+    "auto_reply_allowed": true
   },
   {
     "service": "Refund",
     "department": "Finance",
+    "description": "Handles financial requests including refund processing, payment disputes, fee reversals, billing corrections, and transaction inquiries.",
     "email": "mutasimjan12@gmail.com",
     "authority": "Finance Team",
-    "auto_reply_allowed": true,
-    "keywords": [
-      "refund",
-      "money",
-      "return",
-      "fee",
-      "payment",
-      "charge"
-    ],
-    "resolution": "Refunds are processed within 7-10 business days. To track your refund, log into our portal and visit the 'Transaction History' section. If you are requesting a NEW refund, please ensure you have your invoice number ready for the finance team."
+    "auto_reply_allowed": true
   },
   {
     "service": "Library Book Issue",
     "department": "Library",
+    "description": "Handles library-related requests including book borrowing, returns, renewals, library card issues, overdue fines, and catalog inquiries.",
     "email": "mutasimbhat21@gmail.com",
     "authority": "Library Staff",
-    "auto_reply_allowed": true,
-    "keywords": [
-      "book",
-      "library",
-      "borrow",
-      "issue",
-      "return book",
-      "library card",
-      "fine"
-    ],
-    "resolution": "Books can be issued for up to 14 days. You can renew books twice via the online library catalog. Please ensure you have your physical library card for in-person pickups. Late returns incur a fine of $0.50 per day."
+    "auto_reply_allowed": true
   },
   {
     "service": "Transport Services",
     "department": "Transport",
+    "description": "Handles transportation requests including bus pass applications, shuttle schedules, route information, vehicle services, and commute-related inquiries.",
     "email": "janmutasim563@gmail.com",
     "authority": "Transport Manager",
-    "auto_reply_allowed": true,
-    "keywords": [
-      "bus",
-      "transport",
-      "route",
-      "bus pass",
-      "shuttle",
-      "vehicle"
-    ],
-    "resolution": "Bus passes are issued at the Transport Office (Block B, Ground Floor). You will need one passport-sized photo and your student/employee ID. Shuttle routes and schedules are available live on our mobile app under the 'Commute' tab."
+    "auto_reply_allowed": true
   },
   {
     "service": "Academic Support",
     "department": "Academics",
+    "description": "Handles academic requests including course registration, exam schedules, grade inquiries, transcript requests, enrollment issues, and academic performance records.",
     "email": "mutu02693@gmail.com",
     "authority": "Academic Office",
-    "auto_reply_allowed": true,
-    "keywords": [
-      "course",
-      "registration",
-      "exam",
-      "grade",
-      "transcript",
-      "academic",
-      "class",
-      "enrollment",
-      "results",
-      "marks",
-      "score",
-      "performance",
-      "report card"
-    ],
-    "resolution": "Exam results and report cards are released via the Academic Portal 15 days after the final exam. For transcripts, please submit a request form at the Academic Office window or via the 'Documents' section online."
+    "auto_reply_allowed": true
   }
 ]
