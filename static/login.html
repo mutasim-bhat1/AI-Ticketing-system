@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Ticketing System — Sign In</title>
+    <meta name="description" content="Sign in or create an account for the AI-powered ticketing system." />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.1.0/remixicon.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+
+    <!-- PostHog -->
+    <script>
+        !function (t, e) { var o, n, p, r; e.__SV || (window.posthog = e, e._i = [], e.init = function (i, s, a) { function g(t, e) { var o = e.split("."); 2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } } (p = t.createElement("script")).type = "text/javascript", p.crossOrigin = "anonymous", p.async = !0, p.src = s.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r); var u = e; for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) { var e = "posthog"; return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e }, u.people.toString = function () { return u.toString(1) + ".people (stub)" }, o = "init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageviewId".split(" "), n = 0; n < o.length; n++)g(u, o[n]); e._i.push([i, s, a]) }, e.__SV = 1) }(document, window.posthog || []);
+
+        posthog.init('phc_sOKE9qGIhsoWxAoyKVMUoHDw1LhVUDbBWHihSSVG6Ms', {
+            api_host: 'https://us.i.posthog.com',
+            person_profiles: 'identified_only',
+            autocapture: true,
+            capture_pageview: true,
+            capture_pageleave: true,
+        });
+    </script>
+
+    <style>
+        /* ─── Variables ─────────────────────────────────────────── */
+        :root {
+            --bg-dark: #0a0b10;
+            --bg-card: rgba(22, 24, 35, 0.85);
+            --bg-input: rgba(30, 33, 48, 0.9);
+            --accent-blue: #4f6ef7;
+            --accent-blue-glow: rgba(79, 110, 247, 0.3);
+            --accent-purple: #8b5cf6;
+            --accent-teal: #14b8a6;
+            --accent-green: #22c55e;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --text-primary: #e2e4ea;
+            --text-secondary: #8b8fa3;
+            --text-muted: #555970;
+            --border-light: rgba(255, 255, 255, 0.08);
+            --border-focus: var(--accent-blue);
+            --glass-bg: rgba(22, 24, 35, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.06);
+        }
+
+        /* ─── Reset ─────────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 14px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── Animated Background ────────────────────────────────── */
+        .bg-animation {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-orb:nth-child(1) {
+            width: 600px;
+            height: 600px;
+            background: var(--accent-blue);
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .bg-orb:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-purple);
+            bottom: -150px;
+            right: -150px;
+            animation-delay: -7s;
+        }
+
+        .bg-orb:nth-child(3) {
+            width: 350px;
+            height: 350px;
+            background: var(--accent-teal);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -14s;
+            opacity: 0.15;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            25% {
+                transform: translate(50px, -40px) scale(1.1);
+            }
+
+            50% {
+                transform: translate(-30px, 60px) scale(0.95);
+            }
+
+            75% {
+                transform: translate(40px, 30px) scale(1.05);
+            }
+        }
+
+        /* ─── Grid overlay ───────────────────────────────────────── */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* ─── Login Container ────────────────────────────────────── */
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 40px 36px 36px;
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+            animation: cardAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(24px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ─── Brand ──────────────────────────────────────────────── */
+        .auth-brand {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-brand-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 24px rgba(79, 110, 247, 0.35);
+        }
+
+        .auth-brand h1 {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 30%, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .auth-brand p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        /* ─── Tab Switch ─────────────────────────────────────────── */
+        .auth-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 28px;
+            position: relative;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 2;
+            font-family: inherit;
+        }
+
+        .auth-tab.active {
+            color: #fff;
+            background: var(--accent-blue);
+            box-shadow: 0 4px 12px rgba(79, 110, 247, 0.35);
+        }
+
+        .auth-tab:not(.active):hover {
+            color: var(--text-secondary);
+        }
+
+        /* ─── Form ───────────────────────────────────────────────── */
+        .auth-form {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: formFade 0.3s ease;
+        }
+
+        .auth-form.active {
+            display: flex;
+        }
+
+        @keyframes formFade {
+            from {
+                opacity: 0;
+                transform: translateX(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .input-wrap input,
+        .input-wrap select {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-family: inherit;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .input-wrap select {
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .input-wrap input:focus,
+        .input-wrap select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px var(--accent-blue-glow);
+            background: rgba(30, 33, 48, 1);
+        }
+
+        .input-wrap input:focus+i,
+        .input-wrap input:focus~i {
+            color: var(--accent-blue);
+        }
+
+        .input-wrap input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Password toggle */
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: var(--text-secondary);
+        }
+
+        /* ─── Role Toggle ────────────────────────────────────────── */
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .role-option {
+            position: relative;
+        }
+
+        .role-option input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .role-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 16px 12px;
+            background: var(--bg-input);
+            border: 1.5px solid var(--border-light);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: none;
+            letter-spacing: normal;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .role-option label i {
+            font-size: 24px;
+            color: var(--text-muted);
+            transition: all 0.25s;
+        }
+
+        .role-option label .role-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+        }
+
+        .role-option label .role-desc {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .role-option input:checked+label {
+            border-color: var(--accent-blue);
+            background: rgba(79, 110, 247, 0.08);
+            box-shadow: 0 0 0 3px var(--accent-blue-glow);
+        }
+
+        .role-option input:checked+label i {
+            color: var(--accent-blue);
+        }
+
+        .role-option input:checked+label .role-label {
+            color: var(--accent-blue);
+        }
+
+        .role-option:last-child input:checked+label {
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.08);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        .role-option:last-child input:checked+label i {
+            color: var(--accent-purple);
+        }
+
+        .role-option:last-child input:checked+label .role-label {
+            color: var(--accent-purple);
+        }
+
+        .role-option label:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(30, 33, 48, 1);
+        }
+
+        /* ─── Submit Button ──────────────────────────────────────── */
+        .auth-submit {
+            width: 100%;
+            padding: 13px 0;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.2px;
+            margin-top: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-submit::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .auth-submit:hover::before {
+            opacity: 1;
+        }
+
+        .auth-submit:hover {
+            box-shadow: 0 8px 28px rgba(79, 110, 247, 0.45);
+            transform: translateY(-1px);
+        }
+
+        .auth-submit:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 16px rgba(79, 110, 247, 0.3);
+        }
+
+        .auth-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Spinner */
+        .auth-submit .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+
+        .auth-submit.loading .spinner {
+            display: block;
+        }
+
+        .auth-submit.loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ─── Alert Messages ─────────────────────────────────────── */
+        .auth-alert {
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            animation: alertSlide 0.3s ease;
+        }
+
+        .auth-alert.show {
+            display: flex;
+        }
+
+        .auth-alert.error {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ff8888;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .auth-alert.success {
+            background: rgba(34, 197, 94, 0.12);
+            color: #66e090;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        @keyframes alertSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── Footer ──────────────────────────────────────────────── */
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .auth-footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .auth-footer a:hover {
+            color: var(--accent-purple);
+        }
+
+        /* ─── Features strip (bottom) ─────────────────────────────── */
+        .features-strip {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+
+        .feature-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .feature-chip i {
+            font-size: 14px;
+            color: var(--accent-teal);
+        }
+
+        /* ─── Responsive ─────────────────────────────────────────── */
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 28px 22px 26px;
+            }
+
+            .auth-brand h1 {
+                font-size: 19px;
+            }
+
+            .features-strip {
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+    </div>
+    <div class="bg-grid"></div>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <div class="auth-card">
+
+            <!-- Brand -->
+            <div class="auth-brand">
+                <div class="auth-brand-icon">🎫</div>
+                <h1>AI Desk</h1>
+                <p>Intelligent Ticketing & Support System</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
+                <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</button>
+            </div>
+
+            <!-- ═══ LOGIN FORM ═══ -->
+            <form class="auth-form active" id="form-login" onsubmit="handleLogin(event)">
+                <div class="auth-alert" id="login-alert"></div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-wrap">
+                        <input type="email" id="login-email" placeholder="you@example.com" required
+                            autocomplete="email" />
+                        <i class="ri-mail-line"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrap">
+                        <input type="password" id="login-password" placeholder="Enter your password" required
+                            autocomplete="current-password" />
+                        <i class="ri-lock-2-line"></i>
+                        <button type="button" class="toggle-password"
+                            onclick="togglePwdVisibility('login-password', this)">
+                            <i class="ri-eye-off-line"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-submit" id="login-btn">
+                    <span class="btn-text"><i class="ri-login-box-line"></i> Sign In</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+
+            <!-- ═══ REGISTER FORM ═══ -->
+            <form class="auth-form" id="form-register" onsubmit="handleRegister(event)">
+                <div class="auth-alert" id="register-alert"></div>
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <div class="input-wrap">
+                        <input type="text" id="register-name" placeholder="John Doe" required autocomplete="name" />
+                        <i class="ri-user-line"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-wrap">
+                        <input type="email" id="register-email" placeholder="you@example.com" required
+                            autocomplete="email" />
+                        <i class="ri-mail-line"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrap">
+                        <input type="password" id="register-password" placeholder="Min. 6 characters" required
+                            minlength="6" autocomplete="new-password" />
+                        <i class="ri-lock-2-line"></i>
+                        <button type="button" class="toggle-password"
+                            onclick="togglePwdVisibility('register-password', this)">
+                            <i class="ri-eye-off-line"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>I am a...</label>
+                    <div class="role-selector">
+                        <div class="role-option">
+                            <input type="radio" name="role" id="role-user" value="user" checked />
+                            <label for="role-user">
+                                <i class="ri-user-3-line"></i>
+                                <span class="role-label">Normal User</span>
+                                <span class="role-desc">Student / Employee</span>
+                            </label>
+                        </div>
+                        <div class="role-option">
+                            <input type="radio" name="role" id="role-admin" value="admin" />
+                            <label for="role-admin">
+                                <i class="ri-shield-user-line"></i>
+                                <span class="role-label">Admin</span>
+                                <span class="role-desc">System Administrator</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-submit" id="register-btn">
+                    <span class="btn-text"><i class="ri-user-add-line"></i> Create Account</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="auth-footer">
+                <p>Powered by AI • LangGraph • PostHog Analytics</p>
+            </div>
+        </div>
+
+        <!-- Features Strip -->
+        <div class="features-strip">
+            <div class="feature-chip"><i class="ri-shield-check-line"></i> Secure Auth</div>
+            <div class="feature-chip"><i class="ri-robot-2-line"></i> AI-Powered</div>
+            <div class="feature-chip"><i class="ri-line-chart-line"></i> PostHog Analytics</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // ─── If already logged in, redirect to dashboard ──────────────
+        (function checkAuth() {
+            const token = localStorage.getItem("ai_desk_token");
+            if (token) {
+                window.location.href = "/dashboard";
+            }
+        })();
+
+        // ─── Tab Switching ────────────────────────────────────────────
+        function switchAuthTab(tab) {
+            document.querySelectorAll(".auth-tab").forEach(t => t.classList.remove("active"));
+            document.querySelectorAll(".auth-form").forEach(f => f.classList.remove("active"));
+
+            document.getElementById("tab-" + tab).classList.add("active");
+            document.getElementById("form-" + tab).classList.add("active");
+
+            // Clear alerts
+            document.querySelectorAll(".auth-alert").forEach(a => { a.className = "auth-alert"; a.textContent = ""; });
+        }
+
+        // ─── Show Alert ─────────────────────────────────────────────
+        function showAlert(formId, message, type = "error") {
+            const el = document.getElementById(formId + "-alert");
+            el.className = `auth-alert ${type} show`;
+            el.innerHTML = `<i class="ri-${type === 'error' ? 'error-warning' : 'checkbox-circle'}-line"></i>${message}`;
+        }
+
+        // ─── Password Visibility Toggle ─────────────────────────────
+        function togglePwdVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector("i");
+            if (input.type === "password") {
+                input.type = "text";
+                icon.className = "ri-eye-line";
+            } else {
+                input.type = "password";
+                icon.className = "ri-eye-off-line";
+            }
+        }
+
+        // ─── Loading State ──────────────────────────────────────────
+        function setLoading(btnId, loading) {
+            const btn = document.getElementById(btnId);
+            if (loading) {
+                btn.classList.add("loading");
+                btn.disabled = true;
+            } else {
+                btn.classList.remove("loading");
+                btn.disabled = false;
+            }
+        }
+
+        // ─── LOGIN ──────────────────────────────────────────────────
+        async function handleLogin(e) {
+            e.preventDefault();
+            setLoading("login-btn", true);
+
+            const email = document.getElementById("login-email").value.trim();
+            const password = document.getElementById("login-password").value;
+
+            try {
+                const res = await fetch(`${API_URL}/api/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    // Save session
+                    localStorage.setItem("ai_desk_token", data.token);
+                    localStorage.setItem("ai_desk_user", JSON.stringify(data.user));
+
+                    // Identify user in PostHog (frontend-side)
+                    if (window.posthog) {
+                        posthog.identify(data.user.email, {
+                            name: data.user.name,
+                            role: data.user.role,
+                            email: data.user.email
+                        });
+                        posthog.capture("user_logged_in", {
+                            role: data.user.role,
+                            email: data.user.email
+                        });
+                    }
+
+                    showAlert("login", "Login successful! Redirecting...", "success");
+                    setTimeout(() => { window.location.href = "/dashboard"; }, 600);
+                } else {
+                    showAlert("login", data.error || "Login failed");
+                }
+            } catch (err) {
+                showAlert("login", "Could not connect to server. Please try again.");
+            }
+            setLoading("login-btn", false);
+        }
+
+        // ─── REGISTER ───────────────────────────────────────────────
+        async function handleRegister(e) {
+            e.preventDefault();
+            setLoading("register-btn", true);
+
+            const name = document.getElementById("register-name").value.trim();
+            const email = document.getElementById("register-email").value.trim();
+            const password = document.getElementById("register-password").value;
+            const role = document.querySelector('input[name="role"]:checked').value;
+
+            try {
+                const res = await fetch(`${API_URL}/api/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, password, role })
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    // Identify user in PostHog (frontend-side)
+                    if (window.posthog) {
+                        posthog.identify(data.user.email, {
+                            name: data.user.name,
+                            role: data.user.role,
+                            email: data.user.email
+                        });
+                        posthog.capture("user_registered", {
+                            role: data.user.role,
+                            email: data.user.email
+                        });
+                    }
+
+                    showAlert("register", "Account created! Switching to Sign In...", "success");
+                    setTimeout(() => {
+                        switchAuthTab("login");
+                        document.getElementById("login-email").value = email;
+                    }, 1200);
+                } else {
+                    showAlert("register", data.error || "Registration failed");
+                }
+            } catch (err) {
+                showAlert("register", "Could not connect to server. Please try again.");
+            }
+            setLoading("register-btn", false);
+        }
+    </script>
+</body>
+
+</html>

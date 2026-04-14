@@ -9,6 +9,34 @@
     content="Intelligent AI-powered ticketing system with autonomous ticket creation, routing, and resolution." />
   <link rel="stylesheet" href="/static/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.1.0/remixicon.min.css" />
+
+  <!-- PostHog Auto-Capture: tracks pageviews, clicks, form submissions automatically -->
+  <script>
+    !function (t, e) { var o, n, p, r; e.__SV || (window.posthog = e, e._i = [], e.init = function (i, s, a) { function g(t, e) { var o = e.split("."); 2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } } (p = t.createElement("script")).type = "text/javascript", p.crossOrigin = "anonymous", p.async = !0, p.src = s.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r); var u = e; for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) { var e = "posthog"; return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e }, u.people.toString = function () { return u.toString(1) + ".people (stub)" }, o = "init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageviewId".split(" "), n = 0; n < o.length; n++)g(u, o[n]); e._i.push([i, s, a]) }, e.__SV = 1) }(document, window.posthog || []);
+
+    // Initialize with your project API key
+    posthog.init('phc_sOKE9qGIhsoWxAoyKVMUoHDw1LhVUDbBWHihSSVG6Ms', {
+      api_host: 'https://us.i.posthog.com',
+      person_profiles: 'identified_only',
+      autocapture: true,
+      capture_pageview: true,
+      capture_pageleave: true,
+    });
+
+    // ─── Identify logged-in user to PostHog ───────────────
+    (function identifyUser() {
+      try {
+        const user = JSON.parse(localStorage.getItem('ai_desk_user'));
+        if (user && user.email && window.posthog) {
+          posthog.identify(user.email, {
+            name: user.name,
+            role: user.role,
+            email: user.email
+          });
+        }
+      } catch (e) { }
+    })();
+  </script>
 </head>
 
 <body>
@@ -67,6 +95,10 @@
           <div class="user-role" id="user-display-role">System Administrator</div>
         </div>
       </div>
+      <a class="nav-item" id="nav-logout" onclick="logoutUser()" style="margin-top:8px;color:#ef4444;">
+        <i class="ri-logout-box-line"></i>
+        <span>Logout</span>
+      </a>
     </div>
   </aside>
 
@@ -75,11 +107,11 @@
 
     <!-- Top Bar -->
     <header class="topbar">
-      <div class="role-switcher">
-        <i class="ri-user-settings-line"></i>
+      <div class="role-switcher" id="role-switcher-wrap">
+        <i class="ri-user-settings-line" id="role-switcher-label"></i>
         <select id="role-selector" onchange="switchRole(this.value)">
-          <option value="admin">Login as Admin</option>
-          <option value="user">Login as Normal User</option>
+          <option value="admin">Admin View</option>
+          <option value="user">User View</option>
         </select>
       </div>
 
@@ -110,7 +142,7 @@
       <div class="content-main">
 
         <!-- ════ DASHBOARD VIEW (Admin) ════ -->
-        <div id="panel-dashboard">
+        <div id="panel-dashboard" style="display:none;">
           <div class="stats-row">
             <div class="stat-card" id="stat-card-all" onclick="filterDashboardByStatus('all')">
               <div class="stat-icon blue"><i class="ri-inbox-line"></i></div>

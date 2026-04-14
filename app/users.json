@@ -1,0 +1,32 @@
+{
+  "testuser@example.com": {
+    "name": "Test User",
+    "role": "user",
+    "password_hash": "35d7be72f3da5425fd2f9bd624d531cf:85853d717ed2023d5021fcc55702a03f111762a444606ab5152a64dfd599013d",
+    "created_at": 1773124751.8428874
+  },
+  "admin@example.com": {
+    "name": "Admin Boss",
+    "role": "admin",
+    "password_hash": "6a3a9ad3a4364df7134c6d71bbbd6e30:bffc6adf931dc8900352c9c09f70417e8bf958b67262f0a2780a8e974c909ce1",
+    "created_at": 1773124756.3124757
+  },
+  "user@gmail.com": {
+    "name": "user",
+    "role": "user",
+    "password_hash": "ed4e5b2750e0e8d7c4f5a258ca557ae1:1bdee4f138aa2191e2fd47f7a0f5d588bb25fb25c20ae7ce63f9420a1f274e56",
+    "created_at": 1773125208.7880816
+  },
+  "admin@gmail.com": {
+    "name": "admin",
+    "role": "admin",
+    "password_hash": "2b604c81adf677bc50c02895f342acf8:ef7288d767b08d1c701caea3a3c2aecbe38b9babb598b885dc83bb3db7d31516",
+    "created_at": 1773132771.2772374
+  },
+  "user1@gmail.com": {
+    "name": "john doe",
+    "role": "user",
+    "password_hash": "3bbb738c2eaa1d59f01a2c48bda5c6b5:0e777fc83bd4a0039ff6afb9850245941be129e73391062fb5cd041bcadfb9ce",
+    "created_at": 1776189561.6073742
+  }
+}

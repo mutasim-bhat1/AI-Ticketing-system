@@ -10,6 +10,7 @@ import numpy as np
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from langchain_huggingface import HuggingFaceEmbeddings
+from app.analytics import track_email_sent, track_query_escalated
 
 # Initialize local embedding model (free, fast)
 embeddings_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
@@ -165,8 +166,18 @@ def create_chat_tool(llm):
             query: The user's general question or message
         """
         log_tool_call("chat", {"query": query})
+        
+        prompt = (
+            "You are the 'AI Ticketing Management System'.\n"
+            "STRICT RULES:\n"
+            "1. IDENTITY: You are a professional support assistant. NEVER identify as 'Llama', 'Meta', or a generic AI model.\n"
+            "2. MISSION: Help the user with their ticketing needs or answer general questions helpfully.\n"
+            "3. STYLE: Professional, concise, and corporate.\n\n"
+            f"USER QUERY: {query}"
+        )
+        
         try:
-            response = llm.invoke(query)
+            response = llm.invoke(prompt)
             return response.content if hasattr(response, "content") else str(response)
         except Exception as e:
             print(f"[LOG] Chat tool failed: {e}")
@@ -206,6 +217,10 @@ def create_send_email_tool(smtp_config: dict):
             
             log_result = f"Email sent to {email}"
             print(f"[LOG] {log_result}")
+            track_email_sent(
+                to_email=email,
+                subject=subject,
+            )
             return f"Email ticket sent successfully to {email}"
             
         except Exception as e:
@@ -226,6 +241,7 @@ def create_escalate_tool():
         Escalate to human review for problematic queries.
         """
         log_tool_call("escalate", {"reason": reason})
+        track_query_escalated(query="", reason=reason)
         return f"Escalated for human review. Reason: {reason}"
     
     return escalate

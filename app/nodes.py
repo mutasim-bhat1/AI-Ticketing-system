@@ -87,44 +87,26 @@ Response Format (JSON only):
         print(f"\n🤖 [AGENT] Starting autonomous processing for: '{intent}'")
 
         # ── Build the agent's initial messages ──
-        system_prompt = SystemMessage(content=f"""You are an intelligent support agent AND a helpful chatbot. Your job is to autonomously process a user's request using the tools available to you.
+        system_prompt = SystemMessage(content=f"""You are the 'AI Ticketing Management System' — a professional Enterprise Support Agent.
 
-CURRENT INTENT: {intent}
-ORIGINAL QUERY: {original_query}
+        STRICT IDENTITY RULES:
+        1. IDENTITY: You are the AI Ticketing Management System. NEVER say "I am an AI model", "I am Llama", or "I am developed by Meta".
+        2. NO REPETITION: Do not repeat the same greeting or same answer multiple times.
+        3. NO CHITCHAT: If asked for a joke or non-corporate chatter, politely decline using the refusal template.
 
-YOUR TOOLS:
-1. search_kb(query) — Search the knowledge base for matching services.
-2. generate_reply(query, service, department) — Generate a helpful support response.
-3. send_email(email, subject, body) — Send a ticket email.
-4. escalate(reason) — Escalate to human review.
-5. chat(query) — Answer general questions directly (no tickets, no emails).
+        REFUSAL TEMPLATE: "I am an AI support assistant specialized in technical and corporate ticketing. I cannot fulfill this request as it is outside my professional scope."
 
-MANDATORY WORKFLOW & RULES:
-1. FIRST: Decide if this is a SUPPORT REQUEST or a GENERAL QUERY.
-   - Support requests: IT issues, password resets, fee payments, library, transport, academics, complaints, etc.
-   - General queries: greetings, casual chat, general knowledge questions, nonsense, etc.
+        YOUR TOOLS:
+        1. search_kb(query) — Search the knowledge base for matching services.
+        2. generate_reply(query, service, department) — Generate a helpful support response.
+        3. send_email(email, subject, body) — Send a ticket email.
+        4. escalate(reason) — Escalate to human review.
+        5. chat(query) — Answer general questions directly.
 
-2. IF GENERAL QUERY or NONSENSE: Call chat(query). Do NOT call search_kb, send_email, or escalate. STOP after chat returns.
-
-3. IF SUPPORT REQUEST: Follow the full workflow:
-   Step A: Call search_kb(query) to find the matching service.
-   Step B: Read the result — use the EXACT email, service, and department from the result.
-   Step C: Call send_email with the EXACT email from search_kb. NEVER invent an email.
-   Step D: Call generate_reply with the EXACT service and department from search_kb.
-   Step E: STOP. Do NOT write your own summary.
-
-4. If search_kb finds no match: call escalate(reason="...") and send_email to {self.config['general_support_email']}. Then call generate_reply.
-
-**CRITICAL RESPONSE RULES — READ CAREFULLY:**
-- NEVER mention tool names (search_kb, generate_reply, send_email, escalate, chat) in your response.
-- NEVER describe which functions you called or the internal steps you took.
-- NEVER say things like "The search_kb function was called" or "I called the send_email function".
-- After calling all required tools, simply STOP. Do NOT write a summary of what tools you used.
-- The generate_reply or chat tool will produce the user-facing response. You do NOT need to add anything.
-- If you must write a final message, make it SHORT and conversational — like a human support agent would.
-- BAD example: "The search_kb function was called and found a match. The send_email function was called to send a ticket."
-- GOOD example: "Your request has been forwarded to the IT Support team. You'll hear back shortly!"
-""")
+        MANDATORY WORKFLOW:
+        - Support Request: search_kb -> if match, send_email & generate_reply. If no match, escalate & send_email.
+        - General Query: call chat(query). STOP.
+        """)
 
         human_msg = HumanMessage(content=f"Please process this support request: {intent}")
         messages = [system_prompt, human_msg]
@@ -136,6 +118,7 @@ MANDATORY WORKFLOW & RULES:
 
         # ── The ReAct Loop — LLM reasons, acts, observes, repeats ──
         MAX_ITERATIONS = 8
+        
         api_failed = False
 
         for iteration in range(MAX_ITERATIONS):
@@ -171,7 +154,7 @@ MANDATORY WORKFLOW & RULES:
                 tool_name = tool_call["name"]
                 tool_args = tool_call["args"]
 
-                print(f"  🔧 [AGENT] Chose tool: {tool_name}({json.dumps(tool_args, default=str)[:120]})")
+                print(f"  \U0001f527 [AGENT] Chose tool: {tool_name}({json.dumps(tool_args, default=str)[:120]})")
 
                 # Execute the tool
                 tool_fn = self.tool_map.get(tool_name)
@@ -263,32 +246,24 @@ MANDATORY WORKFLOW & RULES:
     def aggregate_node(self, state: TicketState) -> dict:
         """Merges all responses into a final, clean, user-friendly message."""
         if not state["responses"]:
-            return {"final_response": "Hello! I'm here to help. You can ask me general questions or submit support requests for IT, Finance, Library, Transport, or Academic services."}
+            return {"final_response": "I'm sorry, I was unable to find an answer for your request."}
 
-        # Clean responses: remove any that are just agent narration about tool calls
-        tool_keywords = ["search_kb", "generate_reply", "send_email", "escalate", "chat(", "function was called", "function did not", "tool_call", "tool call"]
-        clean_responses = []
-        for r in state["responses"]:
-            # Skip responses that are just the agent narrating its own tool usage
-            r_lower = r.lower()
-            is_narration = any(kw in r_lower for kw in tool_keywords)
-            if not is_narration:
-                clean_responses.append(r)
+        # Use the LLM to synthesize a single, professional response
+        # This prevents the repetitive "Here's one... Here's another..." issue
+        prompt = f"""Combine these individual support resolutions into a SINGLE, professional, non-repetitive response for the user.
+        
+        STRICT RULES:
+        - NEVER repeat the same information or joke.
+        - If the user asked for something off-topic (like a joke), provide ONLY a polite refusal.
+        - Remove all internal tool narration or technical jargon.
+        - Stay strictly professional.
 
-        # If all responses were narration, use the original but strip tool references
-        if not clean_responses:
-            clean_responses = state["responses"]
-
-        summary = "\n\n".join(clean_responses)
-
-        # Strip any remaining tool name mentions from the final text
-        import re
-        summary = re.sub(r'\b(search_kb|generate_reply|send_email|escalate|chat)\s*\(', '', summary)
-        summary = re.sub(r'\bthe\s+(search_kb|generate_reply|send_email|escalate|chat)\s+function\b', 'the system', summary, flags=re.IGNORECASE)
-
-        if state.get("tickets_created"):
-            final = f"{summary}\n\nThank you for reaching out!"
-        else:
-            final = summary
+        Resolutions to combine:
+        {chr(10).join(f'- {r}' for r in state['responses'])}
+        """
+        
+        res = self.llm.invoke([SystemMessage(content=prompt)])
+        final = res.content.strip()
 
         return {"final_response": final}
+

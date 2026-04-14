@@ -2,7 +2,7 @@
    AI TICKETING SYSTEM — Dashboard Application Logic
    ════════════════════════════════════════════════════════════ */
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = window.location.origin;
 
 // ─── State ─────────────────────────────────────────────────
 let tickets = [];
@@ -13,19 +13,63 @@ let currentView = "dashboard";
 let currentRole = "admin";
 let dashboardMode = "table";
 let dashboardFilter = "all";
+let loggedInUser = null;  // { email, name, role }
 
 const PANELS = ["panel-dashboard", "panel-tickets", "panel-chat"];
 
 // ─── Init ──────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
+  // ─── Auth Check ─────────────────────────────────────────
+  const token = localStorage.getItem("ai_desk_token");
+  if (!token) {
+    window.location.href = "/";
+    return;
+  }
+
+  // Load user info
+  try {
+    loggedInUser = JSON.parse(localStorage.getItem("ai_desk_user"));
+  } catch (e) {
+    loggedInUser = null;
+  }
+
+  if (!loggedInUser) {
+    window.location.href = "/";
+    return;
+  }
+
+  // Update role-selector dropdown to match
+  const selector = document.getElementById("role-selector");
+  if (selector) {
+    // LOCK ADMISSIONS: Admins are locked into admin dashboard. No switching.
+    if (loggedInUser.role === "admin") {
+      selector.style.display = "none";
+      document.getElementById("role-switcher-label").style.display = "none";
+      currentRole = "admin";
+    } else {
+      selector.style.display = "none";
+      document.getElementById("role-switcher-label").style.display = "none";
+      currentRole = "user";
+    }
+  }
+
   loadState();
   loadTheme();
 
-  const selector = document.getElementById("role-selector");
-  if (selector) currentRole = selector.value;
+  // RESET session counters on refresh to ensure zero "phantom" chats
+  chatCounter = 0;
+
+  fetchTickets(); // Load from server instead of localStorage
+
 
   applyRoleVisibility();
-  switchView(currentRole === "user" ? "chat" : "dashboard");
+
+  // Set the initial view based on role
+  if (currentRole === "admin") {
+    switchView("dashboard");
+  } else {
+    switchView("chat");
+  }
 
   document.querySelectorAll(".nav-item[data-view]").forEach(item => {
     item.addEventListener("click", () => {
@@ -71,11 +115,34 @@ function showToast(message, type = "success", icon = "ri-checkbox-circle-line") 
   setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 4200);
 }
 
-// ─── Role Switching ────────────────────────────────────────
+// ─── Data Sync ─────────────────────────────────────────────
+async function fetchTickets() {
+  const token = localStorage.getItem("ai_desk_token");
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${API_URL}/api/tickets`, {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      tickets = data.tickets;
+      saveState();
+      updateStats();
+      if (currentRole === "user") updateUserSummary();
+      renderDashboard();
+      if (currentView === "tickets") renderTickets();
+    }
+  } catch (err) {
+    console.error("Failed to fetch tickets:", err);
+  }
+}
+
+// ─── Role Switching (Removed for production isolation) ─────
 function switchRole(role) {
-  currentRole = role;
-  applyRoleVisibility();
-  switchView(role === "admin" ? "dashboard" : "chat");
+  // Logic removed: Users and admins are locked to their own views.
+  console.warn("Role switching is disabled for security and isolation.");
 }
 
 function applyRoleVisibility() {
@@ -95,14 +162,29 @@ function applyRoleVisibility() {
   const name = document.getElementById("user-display-name");
   const role = document.getElementById("user-display-role");
 
-  if (currentRole === "admin") {
+  // Use real user info from auth
+  if (loggedInUser) {
+    const initials = loggedInUser.name
+      .split(" ")
+      .map(w => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+    avatar.textContent = initials;
+    name.textContent = loggedInUser.name;
+    role.textContent = loggedInUser.role === "admin" ? "System Administrator" : "Student / Employee";
+    avatar.style.background = loggedInUser.role === "admin"
+      ? "linear-gradient(135deg, var(--accent-blue), var(--accent-purple))"
+      : "linear-gradient(135deg, var(--accent-teal), var(--accent-green))";
+  } else if (currentRole === "admin") {
     avatar.textContent = "AD"; name.textContent = "Admin User"; role.textContent = "System Administrator";
     avatar.style.background = "linear-gradient(135deg, var(--accent-blue), var(--accent-purple))";
   } else {
     avatar.textContent = "US"; name.textContent = "Normal User"; role.textContent = "Student / Employee";
     avatar.style.background = "linear-gradient(135deg, var(--accent-teal), var(--accent-green))";
-    updateUserSummary();
   }
+
+  if (currentRole === "user") updateUserSummary();
 
   // Quick actions visibility (inside chat panel, user only)
   const qa = document.getElementById("card-quick-actions");
@@ -134,11 +216,11 @@ function handleSearch(e) {
   const query = e.target.value.toLowerCase().trim();
   const filtered = query
     ? tickets.filter(t =>
-        t.subject?.toLowerCase().includes(query) ||
-        t.department?.toLowerCase().includes(query) ||
-        t.id?.includes(query) ||
-        t.intent?.toLowerCase().includes(query)
-      )
+      t.subject?.toLowerCase().includes(query) ||
+      t.department?.toLowerCase().includes(query) ||
+      t.id?.includes(query) ||
+      t.intent?.toLowerCase().includes(query)
+    )
     : [...tickets];
 
   if (currentView === "dashboard") {
@@ -169,8 +251,10 @@ function updateStats() {
 
 function updateUserSummary() {
   const el = id => document.getElementById(id);
-  if (el("user-stat-open")) el("user-stat-open").textContent = tickets.filter(t => t.status === "open" || t.status === "pending").length;
-  if (el("user-stat-resolved")) el("user-stat-resolved").textContent = tickets.filter(t => t.status === "resolved").length;
+  const userTickets = tickets.filter(t => !t.user_email || t.user_email === loggedInUser.email);
+
+  if (el("user-stat-open")) el("user-stat-open").textContent = userTickets.filter(t => t.status === "open" || t.status === "escalated").length;
+  if (el("user-stat-resolved")) el("user-stat-resolved").textContent = userTickets.filter(t => t.status === "resolved").length;
   if (el("user-stat-chats")) el("user-stat-chats").textContent = chatCounter;
 }
 
@@ -268,7 +352,7 @@ function ticketCardHTML(t) {
 }
 
 function statusBadge(s) { return `<span class="status-badge ${s}"><span class="dot"></span> ${cap(s)}</span>`; }
-function priorityBadge(p) { return `<span class="priority-badge ${p}">${{urgent:"🔴",high:"🟠",medium:"🔵",low:"🟢"}[p]||"⚪"} ${cap(p)}</span>`; }
+function priorityBadge(p) { return `<span class="priority-badge ${p}">${{ urgent: "🔴", high: "🟠", medium: "🔵", low: "🟢" }[p] || "⚪"} ${cap(p)}</span>`; }
 
 // ─── Render Tickets (All/My) ───────────────────────────────
 function renderTickets() {
@@ -299,39 +383,28 @@ async function sendChatMessage() {
   sendBtn.disabled = true;
 
   try {
+    const payload = { query };
+    // Pass logged-in user email for PostHog identity tracking
+    if (loggedInUser && loggedInUser.email) {
+      payload.user_email = loggedInUser.email;
+    }
+
     const res = await fetch(`${API_URL}/query`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     removeTypingIndicator(typingEl);
 
     if (data.status === "success") {
       addChatBubble("bot", data.response);
-      if (data.tickets_created && data.tickets_created.length > 0) {
-        data.tickets_created.forEach(t => {
-          ticketCounter++;
-          const ticket = {
-            id: String(ticketCounter).padStart(4, "0"),
-            subject: t.service || t.intent || query,
-            intent: t.intent || query,
-            department: extractDept(t.service),
-            email: t.email || "N/A",
-            status: t.log?.includes("Escalated") ? "escalated" : "open",
-            priority: guessPriority(t.intent || query),
-            response: data.response,
-            created: new Date().toISOString(),
-            log: t.log || "",
-          };
-          tickets.push(ticket);
-          addActivity("email", `Ticket <strong>#${ticket.id}</strong> created — ${ticket.department}`);
-          showToast(`Ticket #${ticket.id} created for ${ticket.department}`, "success", "ri-ticket-line");
-        });
-      } else {
-        chatCounter++;
-        addActivity("chat-act", "AI answered a general query");
-      }
+      chatCounter++;
+      addActivity("chat-act", "AI answered a query");
+
+      // Refresh tickets from server
+      await fetchTickets();
+      showToast("Ticket updated", "success", "ri-ticket-line");
     } else {
       addChatBubble("bot", `⚠️ Error: ${data.error || "Something went wrong."}`);
       showToast("Something went wrong", "error", "ri-error-warning-line");
@@ -411,8 +484,8 @@ function openTicketModal(id) {
     <div class="modal-field"><label>Status</label><div class="value">${statusBadge(t.status)}</div></div>
     ${isAdmin ? `<div class="modal-field"><label>Priority</label><div class="value">${priorityBadge(t.priority)}</div></div>` : ""}
     <div class="modal-field"><label>Created</label><div class="value">${new Date(t.created).toLocaleString()}</div></div>
-    <div class="modal-field"><label>AI Response</label><div class="value" style="white-space:pre-wrap;background:var(--bg-primary);padding:12px;border-radius:var(--radius-sm);font-size:12.5px;max-height:200px;overflow-y:auto">${esc(t.response||"N/A")}</div></div>
-    ${isAdmin ? `<div class="modal-field"><label>Log</label><div class="value" style="font-size:12px;color:var(--text-muted)">${esc(t.log||"N/A")}</div></div>` : ""}
+    <div class="modal-field"><label>AI Response</label><div class="value" style="white-space:pre-wrap;background:var(--bg-primary);padding:12px;border-radius:var(--radius-sm);font-size:12.5px;max-height:200px;overflow-y:auto">${esc(t.response || "N/A")}</div></div>
+    ${isAdmin ? `<div class="modal-field"><label>Log</label><div class="value" style="font-size:12px;color:var(--text-muted)">${esc(t.log || "N/A")}</div></div>` : ""}
     <div style="display:flex;gap:8px;margin-top:20px">
       ${isAdmin && t.status !== "resolved" ? `<button class="btn btn-primary" onclick="markResolved('${t.id}')"><i class="ri-checkbox-circle-line"></i> Mark Resolved</button>` : ""}
       <button class="btn btn-outline" onclick="closeModal()">Close</button>
@@ -423,13 +496,22 @@ function openTicketModal(id) {
 
 function closeModal() { document.getElementById("ticket-modal").classList.remove("active"); }
 
-function markResolved(id) {
-  const t = tickets.find(x => x.id === id);
-  if (t) {
-    t.status = "resolved";
-    addActivity("resolve", `Ticket <strong>#${id}</strong> marked as resolved`);
-    showToast(`Ticket #${id} resolved`, "success", "ri-checkbox-circle-line");
-    saveState(); updateStats(); updateUserSummary(); renderDashboard(); renderTickets(); renderActivity(); closeModal();
+async function markResolved(id) {
+  const token = localStorage.getItem("ai_desk_token");
+  try {
+    const res = await fetch(`${API_URL}/api/tickets/${id}/resolve`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      addActivity("resolve", `Ticket <strong>#${id}</strong> marked as resolved`);
+      showToast(`Ticket #${id} resolved`, "success", "ri-checkbox-circle-line");
+      await fetchTickets();
+      closeModal();
+    }
+  } catch (err) {
+    showToast("Failed to resolve ticket", "error", "ri-error-warning-line");
   }
 }
 
@@ -439,6 +521,27 @@ document.getElementById("ticket-modal")?.addEventListener("click", e => { if (e.
 function refreshDashboard() {
   updateStats(); updateUserSummary(); renderDashboard(); renderTickets(); renderActivity();
   showToast("Dashboard refreshed", "success", "ri-refresh-line");
+}
+
+// ─── Logout ────────────────────────────────────────────────
+function logoutUser() {
+  const token = localStorage.getItem("ai_desk_token");
+  if (token) {
+    fetch(`${API_URL}/api/logout`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` }
+    }).catch(() => { });
+  }
+  // Reset PostHog identity
+  if (window.posthog) {
+    posthog.capture("user_logged_out", {
+      email: loggedInUser?.email || "unknown"
+    });
+    posthog.reset();
+  }
+  localStorage.removeItem("ai_desk_token");
+  localStorage.removeItem("ai_desk_user");
+  window.location.href = "/";
 }
 
 // ─── Persistence ───────────────────────────────────────────
@@ -463,7 +566,7 @@ function loadState() {
 // ─── Utilities ─────────────────────────────────────────────
 function esc(text) {
   if (!text) return "";
-  return String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; }
